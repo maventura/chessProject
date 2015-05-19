@@ -1,0 +1,20 @@
+﻿<Properties>
+  <MonoDevelop.Ide.Workspace />
+  <MonoDevelop.Ide.Workbench ActiveDocument="Assets\Script\Game\Game.cs">
+    <Files>
+      <File FileName="Assets\Script\Game\Board.cs" Line="48" Column="38" />
+      <File FileName="Assets\Script\Game\Game.cs" Line="20" Column="6" />
+      <File FileName="Assets\Script\Engine\Detectors\MouseDetector.cs" Line="1" Column="1" />
+      <File FileName="Assets\Script\Main.cs" Line="10" Column="1" />
+      <File FileName="Assets\Script\Engine\UI\UI_Button.cs" Line="19" Column="44" />
+      <File FileName="Assets\Script\Screens\MainMenu.cs" Line="40" Column="10" />
+      <File FileName="Assets\Script\Game\Piece.cs" Line="22" Column="41" />
+      <File FileName="Assets\Script\Game\Entity.cs" Line="39" Column="6" />
+      <File FileName="Assets\Script\Engine\DvObjects\DvBaseObject.cs" Line="267" Column="9" />
+    </Files>
+  </MonoDevelop.Ide.Workbench>
+  <MonoDevelop.Ide.DebuggingService.Breakpoints>
+    <BreakpointStore />
+  </MonoDevelop.Ide.DebuggingService.Breakpoints>
+  <MonoDevelop.Ide.DebuggingService.PinnedWatches />
+</Properties>
