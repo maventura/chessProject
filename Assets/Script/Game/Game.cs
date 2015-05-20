@@ -4,17 +4,18 @@ using System.Collections.Generic;
 
 public class Game 
 {
+	public int turn = 0;
+	public List<int[,] > movHistory = new List< int[,] >();
     public Piece piece = new Piece();
     public Piece[] pieces= new Piece[32];
     public Board board = new Board();
     public List<Entity> updateables = new List<Entity>();
 	public bool pieceSelected = false;
-	public static bool turn = false;
+	public static bool turnAlign = false;
 	public int pieceId = 0;
 	public string[,] types = new string[2, 8] { { "rock", "knight", "bishop", "king", "queen", "bishop", "knight", "rock" }, { "pawn","pawn","pawn","pawn","pawn","pawn","pawn","pawn" } };
 	//public DvPrimitiveObject[,] models = new DvPrimitiveObject(PrimitiveType.Capsule);
-	public PrimitiveType[,] models = new PrimitiveType[2,8] {{PrimitiveType.Cylinder, PrimitiveType.Cube, PrimitiveType.Capsule, PrimitiveType.Cube, PrimitiveType.Sphere, PrimitiveType.Capsule, PrimitiveType.Cube,  PrimitiveType.Cylinder},
-		{ PrimitiveType.Sphere,PrimitiveType.Sphere,PrimitiveType.Sphere,PrimitiveType.Sphere,PrimitiveType.Sphere,PrimitiveType.Sphere,PrimitiveType.Sphere,PrimitiveType.Sphere}};
+
 	private float cameraTransition;
 	
 	public void StartGame()
@@ -23,97 +24,30 @@ public class Game
 		spawnPieces();
         updateables.Add(piece);
         updateables.Add(board);
-		string asd = "";
-		for (int i = 0; i < 8; i++) {
-			asd = asd + " //";
-			for (int j = 0; j < 8; j++) {
-				asd = asd + "," + board.pieceMatrix[i,j];
-			}
-		}
-		Debug.Log (asd);
     }
-	//(rcoso, rseno)
-	//-20->100.   100*cos((t+20/140)*pi)
+
     public void Update()
-    {	
-		//100*(Mathf.Cos (((cameraTransition + 20) / 140) * Mathf.PI));
-		if (turn == false) {
-			if (cameraTransition> 0) {
-				cameraTransition -= 1;
-			}
-		} else if (cameraTransition< 30){
-			cameraTransition += 1;
-		}
-		CameraController.SetCameraPosition (40+100*(Mathf.Cos ((cameraTransition / 30) * Mathf.PI - Mathf.PI/2)), 80, 40 + 100*(Mathf.Sin ((cameraTransition / 30) * Mathf.PI - Mathf.PI/2)));
-		CameraController.LookCameraToTarget (board.model);
+	{	turn = movHistory.Count - 1;
+		updateCamera ();
+		captureKeys ();
 		//el count es como el length
 		for (int i = 0; i < updateables.Count; i++) {
 			updateables [i].Update ();
 		}
-		if (Input.GetKeyDown (KeyCode.Escape)) {
-			Application.LoadLevel (0);
-		}
-		if (Input.GetKeyDown (KeyCode.Space)) {
-
-
-			if (pieceSelected) {
-				int landingPiece = board.pieceMatrix [board.selecCol, board.selecRow];
-				Debug.Log ("landingP =" + landingPiece);
-
-				if (landingPiece != -1) {
-					int x1 = pieces[pieceId].col;
-					int y1 = pieces[pieceId].row;
-					int x2 = pieces[landingPiece].col;
-					int y2 = pieces[landingPiece].row;
-					if ((pieces [landingPiece].align != pieces [pieceId].align) &&
-						validMov(pieces[pieceId].type, x1, y1, x2, y2)) { //todo: meter align en validMoves
-							moveSelectedPiece (pieceId);
-							pieceSelected = false;
-							pieces [landingPiece].Destroy ();
-						}
-				} else {
-					int x1 = pieces [pieceId].col;
-					int y1 = pieces [pieceId].row;
-					int x2 = board.selecCol;
-					int y2 = board.selecRow;
-
-					if (validMov (pieces [pieceId].type, x1, y1, x2, y2)) { //todo: meter align en validMoves
-						moveSelectedPiece (pieceId);
-						pieceSelected = false;
-					}
-				}
-				pieceSelected = false;
-				if(pieces[pieceId].align == false)
-				{
-					pieces[pieceId].model.color = Color.white;
-				}else{
-					pieces[pieceId].model.color = Color.yellow;
-				}
-
-			} else {
-				pieceId = board.pieceMatrix [board.selecCol, board.selecRow];
-				if(pieces[pieceId].align == turn)
-				{
-					Debug.Log ("pieceId =" + pieceId);
-					if (pieceId != -1) {
-						pieceSelected = true;
-						pieces [pieceId].model.color = Color.red;
-					}
-				}
-			}
-		}
 
 		board.updateSelector ();
 	}
+
 	public void moveSelectedPiece(int pieceId)
 	{
-		turn = !turn;
+		int[,] m = new int[8,8];
+		copySquareMatrix (m, board.pieceMatrix);
+		movHistory.Add (m);
+		turnAlign = !turnAlign;
 		board.pieceMatrix [pieces [pieceId].col, pieces [pieceId].row] = -1;
-
 		board.pieceMatrix [board.selecCol, board.selecRow] = pieceId;
 		pieces [pieceId].model.x = board.selecCol * 10;
 		pieces [pieceId].model.z = board.selecRow * 10;
-
 		pieces [pieceId].row = board.selecRow;
 		pieces [pieceId].col = board.selecCol;
 
@@ -143,9 +77,9 @@ public class Game
 
 				if((c == 3 || c == 4) && (r == 0 || r == 7))
 				{
-					pieces[idxw].Init(70-c*10, 5, r*10, 5, 15, 5, Color.white, models[r,c]);
+					pieces[idxw].Init(70-c*10, 5, r*10, 5, 15, 5, Color.white, typeToModel(pieces[idxw].type));
 				}else{
-					pieces[idxw].Init(70-c*10, 5, r*10, 5, 5, 5, Color.white, models[r,c]);
+					pieces[idxw].Init(70-c*10, 5, r*10, 5, 5, 5, Color.white, typeToModel(pieces[idxw].type));
 				}
 				board.pieceMatrix[7-c,r] = idxw;
 
@@ -158,9 +92,9 @@ public class Game
 				pieces[idxb].align = true;
 				if((c == 3 || c == 4) && (r == 0 || r == 7))
 				{
-					pieces[idxb].Init(70-c*10, 5,70-r*10 , 5, 15, 5, Color.yellow, models[r,c]);
+					pieces[idxb].Init(70-c*10, 5,70-r*10 , 5, 15, 5, Color.yellow, typeToModel(pieces[idxw].type));
 				}else{
-					pieces[idxb].Init(70-c*10, 5,70-r*10 , 5, 5, 5, Color.yellow, models[r,c]);
+					pieces[idxb].Init(70-c*10, 5,70-r*10 , 5, 5, 5, Color.yellow, typeToModel(pieces[idxw].type));
 				}
 				board.pieceMatrix[7-c,7-r] = idxb;	
 
@@ -322,8 +256,166 @@ public class Game
 		return 0;
 	}
 
+	void updateCamera(){
+		//100*(Mathf.Cos (((cameraTransition + 20) / 140) * Mathf.PI));
+		if (turnAlign == false) {
+			if (cameraTransition> 0) {
+				cameraTransition -= 1;
+			}
+		} else if (cameraTransition< 30){
+			cameraTransition += 1;
+		}
+		CameraController.SetCameraPosition (40+100*(Mathf.Cos ((cameraTransition / 30) * Mathf.PI - Mathf.PI/2)), 80, 40 + 100*(Mathf.Sin ((cameraTransition / 30) * Mathf.PI - Mathf.PI/2)));
+		CameraController.LookCameraToTarget (board.model);
+	}
+
+	void captureKeys(){
+		if (Input.GetKeyDown (KeyCode.Escape)) {
+			Application.LoadLevel (0);
+		}
+		if (Input.GetKeyDown (KeyCode.Space)) {
+			
+			
+			if (pieceSelected) {
+				int landingPiece = board.pieceMatrix [board.selecCol, board.selecRow];
+
+				if (landingPiece != -1) {
+					int x1 = pieces[pieceId].col;
+					int y1 = pieces[pieceId].row;
+					int x2 = pieces[landingPiece].col;
+					int y2 = pieces[landingPiece].row;
+					if ((pieces [landingPiece].align != pieces [pieceId].align) &&
+					    validMov(pieces[pieceId].type, x1, y1, x2, y2)) { //todo: meter align en validMoves
+						moveSelectedPiece (pieceId);
+						pieceSelected = false;
+						pieces [landingPiece].Destroy ();
+					}
+				} else {
+					int x1 = pieces [pieceId].col;
+					int y1 = pieces [pieceId].row;
+					int x2 = board.selecCol;
+					int y2 = board.selecRow;
+					
+					if (validMov (pieces [pieceId].type, x1, y1, x2, y2)) { //todo: meter align en validMoves
+						moveSelectedPiece (pieceId);
+						pieceSelected = false;
+					}
+				}
+				pieceSelected = false;
+				if(pieces[pieceId].align == false)
+				{
+					pieces[pieceId].model.color = Color.white;
+				}else{
+					pieces[pieceId].model.color = Color.yellow;
+				}
+				
+			} else {
+				pieceId = board.pieceMatrix [board.selecCol, board.selecRow];
+				if(pieces[pieceId].align == turnAlign)
+				{
+					if (pieceId != -1) {
+						pieceSelected = true;
+						pieces [pieceId].model.color = Color.red;
+					}
+				}
+			}
+		}
+
+
+		if (Input.GetKeyDown (KeyCode.Z)) {
+			if (turn >= 0)
+			{
+				eliminateModels();
+				turnAlign = !turnAlign;
+				copySquareMatrix(board.pieceMatrix, movHistory[movHistory.Count - 1]);
+				loadPiecesfromMatrix();
+				Debug.Log (movHistory);
+				movHistory.RemoveAt(movHistory.Count-1);
+			}
+		}
 
 
 
+
+
+	}
+
+
+	void eliminateModels(){
+		for (int i = 0; i < pieces.Length; i++) {
+			if(pieces[i].model != null) {
+				pieces[i].Destroy();
+			}
+		}
+	}
+
+
+	void copySquareMatrix(int[,] a, int[,] b)
+	{
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
+				a[i,j] = b[i,j];
+			}
+		}
+	}
+
+
+	void loadPiecesfromMatrix()
+	{
+		for (int i = 0; i < 8; i++) {
+			for (int j = 0; j < 8; j++) {
+				if(board.pieceMatrix[i,j] != -1)
+				{
+					pieces[board.pieceMatrix[i,j]].col = i;
+					pieces[board.pieceMatrix[i,j]].row = j;
+					Color c;
+					if(pieces[board.pieceMatrix[i,j]].align) //0 if white, 1 if black;
+					{
+						c = Color.yellow;
+					}else{
+						c = Color.white;
+					}
+					int h;
+					string t = pieces[board.pieceMatrix[i,j]].type;
+					if(t == "queen" || t == "king") //0 if white, 1 if black;
+					{
+						h = 15;
+					}else{
+						h = 5;
+					}
+					pieces[board.pieceMatrix[i,j]].Init(10*i, 5, 10*j, 5, h, 5, c, typeToModel(t));
+					 //pieces[idxw].Init(70-c*10, 5, r*10, 5, 5, 5, Color.white, models[r,c]);
+
+				}
+			}
+		}
+
+	}
+
+
+	PrimitiveType	typeToModel(string t){
+
+		switch (t)
+		{
+		
+		case "pawn":
+		case "queen":
+			return PrimitiveType.Sphere;
+		case "rock":
+			return PrimitiveType.Cylinder;
+		case "bishop":
+			return PrimitiveType.Capsule;
+		case "king":
+		case "knight":
+			return PrimitiveType.Cube;
+		default:
+			Debug.Log ("me diste mal el string");
+				return PrimitiveType.Capsule;
+		}
+
+		
+
+
+	}
 }
 

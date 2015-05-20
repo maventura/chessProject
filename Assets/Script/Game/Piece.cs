@@ -19,7 +19,6 @@ public class Piece:Entity
     {
         //el base hace que llame al init del entity
         base.Init(x, y, z, width, height, depth, color, type);
-        velocity = 4;
         model.physicsActive = false;
 		model.FreezeRigidBody(true, true, true, true, true, true);
 		model.reciveLighting = true;

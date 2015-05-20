@@ -59,7 +59,7 @@ public class Board:Entity
 
 			if (Input.GetKeyDown(KeyCode.UpArrow))
 		{
-			if (!Game.turn) {
+			if (!Game.turnAlign) {
 				selecRow += 1;
 				if(selecRow > 7) selecRow = 7;
 				//model.z = (selecRow)*10;
@@ -74,7 +74,7 @@ public class Board:Entity
 		} 
 		if (Input.GetKeyDown(KeyCode.DownArrow))
 		{
-			if (!Game.turn) {
+			if (!Game.turnAlign) {
 				selecRow -= 1;
 				if(selecRow < 0) selecRow = 0;
 				//model.z = (selecRow)*10;
@@ -88,7 +88,7 @@ public class Board:Entity
 		} 
 		if (Input.GetKeyDown(KeyCode.LeftArrow))
 		{
-			if (!Game.turn) {
+			if (!Game.turnAlign) {
 			selecCol -= 1;
 			if(selecCol < 0) selecCol = 0;
 			//model.x = (selecCol)*10;
@@ -101,7 +101,7 @@ public class Board:Entity
 		} 
 		if (Input.GetKeyDown(KeyCode.RightArrow))
 		{
-			if (!Game.turn) {
+			if (!Game.turnAlign) {
 			selecCol += 1;
 			if(selecCol > 7) selecCol = 7;
 			//model.x = (selecCol)*10;
