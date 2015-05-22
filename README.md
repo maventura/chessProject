@@ -3,4 +3,4 @@ A chess game.
 
 goo.gl/s1OScw
 
-ayudame con la sangre
+ayudame con la sangre.
