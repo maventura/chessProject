@@ -1,6 +1,6 @@
 # chessProject
 A chess game.
 
-goo.gl/s1OScw
+goo.gl/rAbjUO
 
 ayudame con la sangre.
